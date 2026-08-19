@@ -102,5 +102,5 @@ Abre `http://127.0.0.1:8000` y entra con `demo` / `demo1234`.
 
 
 
-\*\*Scrodia\*\* · \[GitHub](https://github.com/TU\_USUARIO) · \[LinkedIn](https://linkedin.com/in/TU\_PERFIL)
+\*\*Scrodia\*\* · \[GitHub](https://github.com/Spircox)
 
