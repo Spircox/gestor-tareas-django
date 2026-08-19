@@ -10,7 +10,7 @@ etiquetas, subtareas y autenticación multiusuario.
 
 
 
-> 🔗 \*\*Demo en vivo:\*\* \*(próximamente)\*
+> 🔗 \*\*Demo en vivo:\*\* \*(https://gestor-tareas-django.onrender.com/)\*
 
 > 👤 \*\*Credenciales demo:\*\* `demo` / `demo1234`
 
