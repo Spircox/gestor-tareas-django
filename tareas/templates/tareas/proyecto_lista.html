@@ -1,0 +1,26 @@
+{% extends 'tareas/base.html' %}
+{% block contenido %}
+<h1 class="mb-4">Mis Proyectos</h1>
+{% if proyectos %}
+  <div class="row">
+    {% for proyecto in proyectos %}
+    <div class="col-md-4 mb-3">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">
+            <a href="{% url 'tareas:proyecto_detalle' proyecto.pk %}" class="text-decoration-none">{{ proyecto.nombre }}</a>
+          </h5>
+          <p class="card-text text-muted">{{ proyecto.descripcion|truncatewords:15|default:"Sin descripción" }}</p>
+        </div>
+        <div class="card-footer bg-body d-flex justify-content-between">
+          <span class="badge bg-secondary">{{ proyecto.tareas.count }} tareas</span>
+          <small class="text-muted">{{ proyecto.creado_el|date:"d M Y" }}</small>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="alert alert-info">No hay proyectos todavía. ¡Crea el primero con el botón verde!</div>
+{% endif %}
+{% endblock %}

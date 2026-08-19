@@ -1,0 +1,14 @@
+{% extends 'tareas/base.html' %}
+{% block contenido %}
+<h1 class="mb-4">{{ titulo }}</h1>
+<div class="card shadow-sm">
+  <div class="card-body">
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" class="btn btn-primary mt-2">Guardar</button>
+      <a href="{% url 'tareas:proyecto_lista' %}" class="btn btn-secondary mt-2">Cancelar</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends 'tareas/base.html' %}
+{% block contenido %}
+<h1 class="mb-4">Dashboard</h1>
+
+<div class="row g-3 mb-4">
+  <div class="col"><div class="card text-center shadow-sm"><div class="card-body">
+    <h3>{{ datos.total_proyectos }}</h3><span class="text-muted">Proyectos</span>
+  </div></div></div>
+  <div class="col"><div class="card text-center shadow-sm"><div class="card-body">
+    <h3>{{ datos.total_tareas }}</h3><span class="text-muted">Tareas</span>
+  </div></div></div>
+  <div class="col"><div class="card text-center shadow-sm"><div class="card-body">
+    <h3 class="text-success">{{ datos.completadas }}</h3><span class="text-muted">Completadas</span>
+  </div></div></div>
+  <div class="col"><div class="card text-center shadow-sm"><div class="card-body">
+    <h3 class="text-primary">{{ datos.en_proceso }}</h3><span class="text-muted">En proceso</span>
+  </div></div></div>
+  <div class="col"><div class="card text-center shadow-sm"><div class="card-body">
+    <h3 class="text-danger">{{ datos.atrasadas }}</h3><span class="text-muted">Atrasadas</span>
+  </div></div></div>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-5">
+    <div class="card shadow-sm"><div class="card-body">
+      <h5 class="mb-3">Distribución de tareas</h5>
+      <canvas id="grafica"></canvas>
+    </div></div>
+  </div>
+  <div class="col-md-7">
+    <div class="card shadow-sm"><div class="card-body">
+      <h5 class="mb-3">Progreso por proyecto</h5>
+      {% for p in proyectos %}
+      <div class="mb-3">
+        <div class="d-flex justify-content-between">
+          <a href="{% url 'tareas:proyecto_detalle' p.pk %}" class="text-decoration-none">{{ p.nombre }}</a>
+          <span class="text-muted small">{{ p.hechas }}/{{ p.total }} ({{ p.progreso }}%)</span>
+        </div>
+        <div class="progress" style="height: 8px;">
+          <div class="progress-bar bg-success" style="width: {{ p.progreso }}%"></div>
+        </div>
+      </div>
+      {% empty %}
+      <p class="text-muted">Aún no hay proyectos.</p>
+      {% endfor %}
+    </div></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+  new Chart(document.getElementById('grafica'), {
+    type: 'doughnut',
+    data: {
+      labels: {{ chart.labels|safe }},
+      datasets: [{ data: {{ chart.datos|safe }}, backgroundColor: ['#ffc107', '#0d6efd', '#198754'] }]
+    }
+  });
+</script>
+{% endblock %}

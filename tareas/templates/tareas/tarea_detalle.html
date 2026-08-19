@@ -1,0 +1,78 @@
+{% extends 'tareas/base.html' %}
+{% block contenido %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <a href="{% url 'tareas:proyecto_detalle' tarea.proyecto.pk %}" class="btn btn-sm btn-secondary mb-3">← {{ tarea.proyecto.nombre }}</a>
+
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start">
+          <h2 class="{% if tarea.estado == 'completada' %}text-decoration-line-through text-muted{% endif %}">{{ tarea.titulo }}</h2>
+          <div>
+            <a href="{% url 'tareas:tarea_editar' tarea.pk %}" class="btn btn-outline-primary btn-sm">Editar</a>
+            <form method="post" action="{% url 'tareas:tarea_eliminar' tarea.pk %}" class="d-inline" onsubmit="return confirm('¿Eliminar tarea?');">
+              {% csrf_token %}
+              <button class="btn btn-outline-danger btn-sm">🗑</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="mb-2">
+          {% for et in tarea.etiquetas.all %}
+          <span class="badge" style="background: {{ et.color }};">{{ et.nombre }}</span>
+          {% empty %}<span class="text-muted small">Sin etiquetas</span>
+          {% endfor %}
+        </div>
+
+        <p>{{ tarea.descripcion|linebreaksbr }}</p>
+
+        <p class="text-muted small mb-3">
+          📅 {{ tarea.fecha_limite|date:"d M Y"|default:"Sin fecha" }}
+          {% if tarea.atrasada %}<span class="badge bg-danger">ATRASADA</span>
+          {% elif tarea.vence_hoy %}<span class="badge bg-warning text-dark">VENCE HOY</span>{% endif %}
+        </p>
+
+        <form method="post" action="{% url 'tareas:tarea_mover' tarea.pk %}" class="d-inline">
+          {% csrf_token %}
+          <input type="hidden" name="volver" value="detalle">
+          <select name="estado" class="form-select form-select-sm w-auto d-inline-block" onchange="this.form.submit()">
+            {% for value, label in tarea.ESTADO_CHOICES %}
+            <option value="{{ value }}" {% if tarea.estado == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </form>
+      </div>
+    </div>
+
+    <div class="card shadow-sm">
+      <div class="card-header bg-body fw-bold">
+        Subtareas {% if tarea.progreso_subtareas %}<span class="badge bg-secondary">{{ tarea.progreso_subtareas }}</span>{% endif %}
+      </div>
+      <ul class="list-group list-group-flush">
+        {% for sub in tarea.subtareas.all %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <form method="post" action="{% url 'tareas:subtarea_toggle' sub.pk %}" class="d-flex align-items-center gap-2">
+            {% csrf_token %}
+            <input type="checkbox" class="form-check-input" {% if sub.completada %}checked{% endif %} onchange="this.form.submit()">
+            <span class="{% if sub.completada %}text-decoration-line-through text-muted{% endif %}">{{ sub.texto }}</span>
+          </form>
+          <form method="post" action="{% url 'tareas:subtarea_eliminar' sub.pk %}">
+            {% csrf_token %}
+            <button class="btn btn-sm btn-outline-danger">✕</button>
+          </form>
+        </li>
+        {% empty %}
+        <li class="list-group-item text-muted small">Sin subtareas.</li>
+        {% endfor %}
+      </ul>
+      <div class="card-body">
+        <form method="post" action="{% url 'tareas:subtarea_agregar' tarea.pk %}" class="d-flex gap-2">
+          {% csrf_token %}
+          {{ form_sub.texto }}
+          <button class="btn btn-primary">Añadir</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

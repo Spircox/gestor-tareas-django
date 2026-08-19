@@ -1,0 +1,84 @@
+{% extends 'tareas/base.html' %}
+{% block titulo %}{{ proyecto.nombre }}{% endblock %}
+{% block contenido %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1>{{ proyecto.nombre }} <small class="text-muted fs-6">{{ proyecto.descripcion }}</small></h1>
+  <div>
+    <a href="{% url 'tareas:tarea_crear' proyecto.pk %}" class="btn btn-success btn-sm">+ Tarea</a>
+    <a href="{% url 'tareas:proyecto_editar' proyecto.pk %}" class="btn btn-outline-primary btn-sm">Editar</a>
+    <form method="post" action="{% url 'tareas:proyecto_eliminar' proyecto.pk %}" class="d-inline" onsubmit="return confirm('¿Eliminar proyecto y todas sus tareas?');">
+      {% csrf_token %}
+      <button class="btn btn-outline-danger btn-sm">Eliminar</button>
+    </form>
+  </div>
+</div>
+
+<div class="row g-3">
+  {% for estado, label, tareas_col in columnas %}
+  <div class="col-md-4">
+    <div class="card shadow-sm">
+      <div class="card-header bg-body fw-bold d-flex justify-content-between">
+        {{ label }} <span class="badge bg-secondary">{{ tareas_col|length }}</span>
+      </div>
+      <div class="card-body kanban-col bg-body-tertiary" data-estado="{{ estado }}" style="min-height: 320px;">
+        {% for tarea in tareas_col %}
+        <div class="card mb-2 tarea-card" draggable="true" data-id="{{ tarea.pk }}" style="cursor: grab;">
+          <div class="card-body p-2">
+            <a href="{% url 'tareas:tarea_detalle' tarea.pk %}" class="text-decoration-none small fw-bold">{{ tarea.titulo }}</a>
+            <div class="mt-1">
+              {% for et in tarea.etiquetas.all %}
+              <span class="badge" style="background: {{ et.color }};">{{ et.nombre }}</span>
+              {% endfor %}
+            </div>
+            <div class="d-flex justify-content-between mt-1">
+              <small class="{% if tarea.atrasada %}text-danger fw-bold{% elif tarea.vence_hoy %}text-warning fw-bold{% else %}text-muted{% endif %}">
+                {% if tarea.fecha_limite %}📅 {{ tarea.fecha_limite|date:"d M" }}{% endif %}
+              </small>
+              {% if tarea.progreso_subtareas %}<small class="text-muted">☑ {{ tarea.progreso_subtareas }}</small>{% endif %}
+            </div>
+          </div>
+        </div>
+        {% empty %}
+        <p class="text-muted small text-center">Suelta tareas aquí</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const csrf = document.cookie.split(';').find(c => c.trim().startsWith('csrftoken='))?.split('=')[1];
+
+  document.querySelectorAll('.tarea-card').forEach(card => {
+    card.addEventListener('dragstart', e => {
+      e.dataTransfer.setData('text/plain', card.dataset.id);
+      card.classList.add('opacity-50');
+    });
+    card.addEventListener('dragend', () => card.classList.remove('opacity-50'));
+  });
+
+  document.querySelectorAll('.kanban-col').forEach(col => {
+    col.addEventListener('dragover', e => { e.preventDefault(); col.classList.add('bg-body'); });
+    col.addEventListener('dragleave', () => col.classList.remove('bg-body'));
+    col.addEventListener('drop', e => {
+      e.preventDefault();
+      col.classList.remove('bg-body');
+      const id = e.dataTransfer.getData('text/plain');
+      const card = document.querySelector(`.tarea-card[data-id='${id}']`);
+      if (!card) return;
+      fetch(`/tareas/${id}/mover/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': csrf, 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'estado=' + col.dataset.estado
+      }).then(r => r.json()).then(() => {
+        const aviso = col.querySelector('p');
+        if (aviso) aviso.remove();
+        col.appendChild(card);
+      });
+    });
+  });
+</script>
+{% endblock %}

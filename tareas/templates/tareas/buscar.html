@@ -1,0 +1,50 @@
+{% extends 'tareas/base.html' %}
+{% block contenido %}
+<h1 class="mb-4">Buscar tareas</h1>
+
+<form method="get" class="card shadow-sm mb-4"><div class="card-body row g-2 align-items-end">
+  <div class="col-md-5">
+    <label class="form-label small">Texto</label>
+    <input type="search" name="q" value="{{ q }}" class="form-control" placeholder="Título o descripción...">
+  </div>
+  <div class="col-md-3">
+    <label class="form-label small">Estado</label>
+    <select name="estado" class="form-select">
+      <option value="">Todos</option>
+      {% for value, label in estados %}
+      <option value="{{ value }}" {% if estado == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-3">
+    <label class="form-label small">Etiqueta</label>
+    <select name="etiqueta" class="form-select">
+      <option value="">Todas</option>
+      {% for et in etiquetas %}
+      <option value="{{ et.id }}" {% if etiqueta == et.id|stringformat:"s" %}selected{% endif %}>{{ et.nombre }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-1">
+    <button class="btn btn-primary w-100">🔍</button>
+  </div>
+</div></form>
+
+<h5 class="mb-3">{{ tareas|length }} resultado(s)</h5>
+<ul class="list-group">
+  {% for tarea in tareas %}
+  <li class="list-group-item d-flex justify-content-between">
+    <div>
+      <a href="{% url 'tareas:tarea_detalle' tarea.pk %}" class="text-decoration-none fw-bold">{{ tarea.titulo }}</a>
+      <div class="small text-muted">{{ tarea.proyecto.nombre }}</div>
+    </div>
+    <div class="text-end">
+      {% for et in tarea.etiquetas.all %}<span class="badge" style="background: {{ et.color }};">{{ et.nombre }}</span>{% endfor %}
+      <div class="small text-muted">{{ tarea.get_estado_display }}</div>
+    </div>
+  </li>
+  {% empty %}
+  <li class="list-group-item text-muted">Sin resultados.</li>
+  {% endfor %}
+</ul>
+{% endblock %}
