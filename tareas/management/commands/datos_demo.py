@@ -8,6 +8,9 @@ from tareas.models import Proyecto, Tarea, Etiqueta, Subtarea
 class Command(BaseCommand):
     help = 'Crea datos de ejemplo para probar todo'
 
+    if Proyecto.objects.exists():
+        self.stdout.write(self.style.WARNING('Ya existen proyectos, no se crearán datos de ejemplo'))
+    
     def handle(self, *args, **options):
         usuario, _ = User.objects.get_or_create(username='demo')
         usuario.set_password('demo1234')
